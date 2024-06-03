@@ -18,6 +18,9 @@ import os
 
 from yarl import URL
 
+from dotenv import load_dotenv
+load_dotenv()
+
 try:
     port = int(os.environ.get("PORT", "8080"))
 except ValueError:
