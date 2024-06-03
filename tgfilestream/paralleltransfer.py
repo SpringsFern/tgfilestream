@@ -23,6 +23,8 @@ import math
 from telethon import TelegramClient, utils
 from telethon.crypto import AuthKey
 from telethon.network import MTProtoSender
+from telethon.tl.alltlobjects import LAYER
+from telethon.tl.functions import InvokeWithLayerRequest
 from telethon.tl.functions.auth import ExportAuthorizationRequest, ImportAuthorizationRequest
 from telethon.tl.functions.upload import GetFileRequest
 from telethon.tl.types import (Document, InputFileLocation, InputDocumentFileLocation,
@@ -52,7 +54,6 @@ class Connection:
 class DCConnectionManager:
     log: logging.Logger
     client: TelegramClient
-    loop: asyncio.AbstractEventLoop
 
     dc_id: int
     dc: Optional[DcOption]
@@ -68,20 +69,19 @@ class DCConnectionManager:
         self.auth_key = None
         self.connections = []
         self._list_lock = asyncio.Lock()
-        self.loop = client.loop
         self.dc = None
 
     async def _new_connection(self) -> Connection:
         if not self.dc:
             self.dc = await self.client._get_dc(self.dc_id)
-        sender = MTProtoSender(self.auth_key, self.loop, loggers=self.client._log)
+        sender = MTProtoSender(self.auth_key, loggers=self.client._log)
         index = len(self.connections) + 1
         conn = Connection(sender=sender, log=self.log.getChild(f"conn{index}"), lock=asyncio.Lock())
         self.connections.append(conn)
         async with conn.lock:
             conn.log.info("Connecting...")
             connection_info = self.client._connection(self.dc.ip_address, self.dc.port, self.dc.id,
-                                                      loop=self.loop, loggers=self.client._log,
+                                                      loggers=self.client._log,
                                                       proxy=self.client._proxy)
             await sender.connect(connection_info)
             if not self.auth_key:
@@ -98,9 +98,12 @@ class DCConnectionManager:
             self.auth_key = self.client.session.auth_key
             conn.sender.auth_key = self.auth_key
             return
-        req = self.client._init_with(ImportAuthorizationRequest(
+        self.client._init_request.query=ImportAuthorizationRequest(
             id=auth.id, bytes=auth.bytes
-        ))
+        )
+        req = InvokeWithLayerRequest(
+            LAYER, self.client._init_request
+        )
         await conn.sender.send(req)
         self.auth_key = conn.sender.auth_key
 
@@ -129,7 +132,6 @@ class DCConnectionManager:
 class ParallelTransferrer:
     log: logging.Logger = logging.getLogger(__name__)
     client: TelegramClient
-    loop: asyncio.AbstractEventLoop
 
     dc_managers: Dict[int, DCConnectionManager]
 
@@ -137,7 +139,6 @@ class ParallelTransferrer:
 
     def __init__(self, client: TelegramClient) -> None:
         self.client = client
-        self.loop = self.client.loop
         self._counter = 0
         self.dc_managers = {
             1: DCConnectionManager(client, 1),
