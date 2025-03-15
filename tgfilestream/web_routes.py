@@ -34,7 +34,7 @@ async def handle_head_request(req: web.Request) -> web.Response:
     return await handle_request(req, head=True)
 
 
-@routes.get(r"/{id:\d+}/{name}")
+@routes.get(r"/{id:\d+}/{name}", allow_head=False)
 async def handle_get_request(req: web.Request) -> web.Response:
     return await handle_request(req, head=False)
 

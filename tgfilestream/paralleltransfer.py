@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import copy
 from typing import Union, AsyncGenerator, AsyncContextManager, Dict, Optional, List
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -98,11 +99,12 @@ class DCConnectionManager:
             self.auth_key = self.client.session.auth_key
             conn.sender.auth_key = self.auth_key
             return
-        self.client._init_request.query=ImportAuthorizationRequest(
+        init_request = copy.copy(self.client._init_request)
+        init_request.query = ImportAuthorizationRequest(
             id=auth.id, bytes=auth.bytes
         )
         req = InvokeWithLayerRequest(
-            LAYER, self.client._init_request
+            LAYER, init_request
         )
         await conn.sender.send(req)
         self.auth_key = conn.sender.auth_key
