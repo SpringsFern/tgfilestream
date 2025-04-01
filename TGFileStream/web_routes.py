@@ -28,6 +28,12 @@ log = logging.getLogger(__name__)
 routes = web.RouteTableDef()
 ongoing_requests: Dict[str, int] = defaultdict(lambda: 0)
 
+@routes.get("/")
+async def handle_root_request(_) -> web.Response:
+    return web.json_response({
+        "status": "ok",
+        "source": "https://github.com/DeekshithSH/TGFileStream"
+    })
 
 @routes.head(r"/{id:\d+}/{name}")
 async def handle_head_request(req: web.Request) -> web.Response:
