@@ -1,4 +1,4 @@
-# tg-filestream
+# TGFileStream
 
 from os import environ
 from aiohttp import web
