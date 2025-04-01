@@ -22,21 +22,27 @@ from aiohttp import web
 
 from .config import trust_headers
 
-pack_bits = 32
-pack_bit_mask = (1 << pack_bits) - 1
+chat_id_bits = 64
+chat_id_mask = (1 << chat_id_bits) - 1
+
+msg_id_bits = 32
+msg_id_mask = (1 << msg_id_bits) - 1
 
 group_bit = 0b01
 channel_bit = 0b10
 chat_id_offset = 2
-msg_id_offset = pack_bits + chat_id_offset
+msg_id_offset = chat_id_bits + chat_id_offset
 
 
 def pack_id(evt: events.NewMessage.Event) -> int:
     file_id = 0
-    if evt.is_group:
-        file_id |= group_bit
+    chat_id=evt.chat_id
     if evt.is_channel:
         file_id |= channel_bit
+        chat_id -= - 1000000000000
+    elif evt.is_group:
+        file_id |= group_bit
+        chat_id -= chat_id
     file_id |= evt.chat_id << chat_id_offset
     file_id |= evt.id << msg_id_offset
     return file_id
@@ -45,8 +51,8 @@ def pack_id(evt: events.NewMessage.Event) -> int:
 def unpack_id(file_id: int) -> Tuple[TypeInputPeer, int]:
     is_group = file_id & group_bit
     is_channel = file_id & channel_bit
-    chat_id = file_id >> chat_id_offset & pack_bit_mask
-    msg_id = file_id >> msg_id_offset & pack_bit_mask
+    chat_id = file_id >> chat_id_offset & chat_id_mask
+    msg_id = file_id >> msg_id_offset & msg_id_mask
     if is_channel:
         peer = InputPeerChannel(channel_id=chat_id, access_hash=0)
     elif is_group:
