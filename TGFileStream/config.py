@@ -1,4 +1,4 @@
-# tgfilestream - A Telegram bot that can stream Telegram files to users over HTTP.
+# TGFileStream - A Telegram bot that can stream Telegram files to users over HTTP.
 # Copyright (C) 2019 Tulir Asokan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ trust_headers = bool(os.environ.get("TRUST_FORWARD_HEADERS"))
 host = os.environ.get("HOST", "localhost")
 public_url = URL(os.environ.get("PUBLIC_URL", f"http://{host}:{port}"))
 
-session_name = os.environ.get("TG_SESSION_NAME", "tgfilestream")
+session_name = os.environ.get("TG_SESSION_NAME", "TGFileStream")
 
 log_config = os.environ.get("LOG_CONFIG")
 debug = bool(os.environ.get("DEBUG"))

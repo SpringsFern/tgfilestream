@@ -1,9 +1,9 @@
-# tgfilestream
+# TGFileStream
 A Telegram bot that can stream Telegram files to users over HTTP.
 
 ## Setup
 Install dependencies (see [requirements.txt](/requirements.txt)), configure
-environment variables (see below) and run with `python3 -m tgfilestream`.
+environment variables (see below) and run with `python3 -m TGFileStream`.
 
 A reverse proxy is recommended to add TLS. When using a reverse proxy, keep
 `HOST` as-is, but add the publicly accessible URL to `PUBLIC_URL`. The URL
@@ -22,5 +22,5 @@ should include the protocol, e.g. `https://example.com`.
 * `CONNECTION_LIMIT` (default 20) - The maximum number of connections to a single Telegram datacenter.
 * `TG_START_MESG` - The message that should be shown in Telegram chat, in case of non-media message.
 * `TG_G_C_MESG` - The message that should be shown in a Telegram Group chat.
-* `TG_SESSION_NAME` (defaults to `tgfilestream`) - The name of the Telethon session file to use.
+* `TG_SESSION_NAME` (defaults to `TGFileStream`) - The name of the Telethon session file to use.
 * `TG_BOT_FATHER_TOKEN` (defaults to None) - This option is mutually exclusive to `TG_SESSION_NAME`, and if set, the client will login as a bot, instead of an user.

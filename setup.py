@@ -1,6 +1,6 @@
 import setuptools
 
-from tgfilestream import __version__
+from TGFileStream import __version__
 
 try:
     long_desc = open("README.md").read()
@@ -8,9 +8,9 @@ except IOError:
     long_desc = "Failed to read README.md"
 
 setuptools.setup(
-    name="tgfilestream",
+    name="TGFileStream",
     version=__version__,
-    url="https://mau.dev/tulir/tgfilestream",
+    url="https://mau.dev/tulir/TGFileStream",
 
     author="Tulir Asokan",
     author_email="tulir@maunium.net",
@@ -42,6 +42,6 @@ setuptools.setup(
     ],
     entry_points="""
         [console_scripts]
-        tgfilestream=tgfilestream.__main__:main
+        TGFileStream=TGFileStream.__main__:main
     """,
 )

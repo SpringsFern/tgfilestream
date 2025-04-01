@@ -1,4 +1,4 @@
-# tgfilestream - A Telegram bot that can stream Telegram files to users over HTTP.
+# TGFileStream - A Telegram bot that can stream Telegram files to users over HTTP.
 # Copyright (C) 2019 Tulir Asokan
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,4 +23,4 @@ else:
     logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
     logging.getLogger("telethon").setLevel(logging.INFO if debug else logging.ERROR)
 
-log = logging.getLogger("tgfilestream")
+log = logging.getLogger("TGFileStream")
