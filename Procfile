@@ -1,1 +1,1 @@
-web: python3 -m tgfilestream
+web: python3 app.py
