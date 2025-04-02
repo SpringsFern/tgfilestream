@@ -25,6 +25,7 @@ setuptools.setup(
         "aiohttp>=3",
         "telethon>=1.10",
         "yarl>=1",
+        "python-dotenv>=0.20",
     ],
     extras_require={
         "fast": ["cryptg>=0.2"],
@@ -42,6 +43,6 @@ setuptools.setup(
     ],
     entry_points="""
         [console_scripts]
-        TGFileStream=TGFileStream.__main__:main
+        tg-filestream=TGFileStream.__main__:main
     """,
 )
