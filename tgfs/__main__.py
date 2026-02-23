@@ -29,7 +29,7 @@ from tgfs.telegram import client, load_plugins, multi_clients, start_clients
 from tgfs.database import DB
 from tgfs.utils.utils import load_configs, load_patches
 
-load_patches("tgfs/patches")
+load_patches(Config.PATCH_PATH)
 
 app = init_app()
 runner = web.AppRunner(app, handler_cancellation=True)
@@ -37,20 +37,25 @@ runner = web.AppRunner(app, handler_cancellation=True)
 async def additional_check():
     version = await DB.db.get_config_value("VERSION")
     if version != __version__:
-        await DB.db.set_config_value("VERSION", __version__)
         if not version:
+            await DB.db.set_config_value("VERSION", __version__)
             return
-        await DB.db.set_config_value("OLD_VERSION", version)
-
-        # major = int(version.split(".", maxsplit=3)[0])
-        minor = int(version.split(".", maxsplit=3)[1])
-        if minor != Version.minor:
+        _version = version.split(".", maxsplit=3)
+        major = int(_version[0])
+        minor = int(_version[1])
+        patch = int(_version[2])
+        if minor != Version.minor or major != Version.major:
+            # ToDo: Create Migration Script execute based on version
             log.warning("version mismatch detected. Old version: %s, Current version: %s", version, __version__)
+        await DB.db.set_config_value("VERSION", __version__)
+        await DB.db.set_config_value("OLD_VERSION", version)
 
 async def start() -> None:
     log.info("Initializing Database")
     await DB.init()
     await load_configs()
+    log.info("Running Checks")
+    await additional_check()
     log.info("Starting Telegram Client")
     await client.start(bot_token=Config.BOT_TOKEN)
     if not Config.NO_UPDATE:

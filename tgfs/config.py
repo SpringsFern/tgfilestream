@@ -81,9 +81,6 @@ class Config(ConfigBase):
 
     CONNECTION_LIMIT: int = args.connection_limit or ConfigBase.env_int("CONNECTION_LIMIT", 5)
 
-    DEBUG: bool = ConfigBase.env_bool("DEBUG")
-    EXT_DEBUG: bool = ConfigBase.env_bool("EXT_DEBUG")
-
     DOWNLOAD_PART_SIZE: int = ConfigBase.env_int(
         "DOWNLOAD_PART_SIZE", 1024 * 1024
     )
@@ -119,6 +116,11 @@ class Config(ConfigBase):
         )
 
     SESSION_NAME: str = args.session
+
+    # ---------- Extras ----------
+    DEBUG: bool = ConfigBase.env_bool("DEBUG")
+    EXT_DEBUG: bool = ConfigBase.env_bool("EXT_DEBUG")
+    PATCH_PATH: str = environ.get("PATCH_PATH", "tgfs/patches")
 
     # ---------- Security ----------
     SECRET: Optional[bytes] = None
