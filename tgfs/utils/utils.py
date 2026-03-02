@@ -14,13 +14,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sys
 import base64
 import hashlib
 import hmac
 import struct
 import time
-import importlib.util
+import importlib.metadata
 from typing import Optional, cast
 from pathlib import Path
 
@@ -33,6 +34,8 @@ from tgfs.paralleltransfer import ParallelTransferrer
 from tgfs.utils.types import FileSource, InputTypeLocation, User
 from tgfs.telegram import client
 from tgfs.database import DB
+
+log = logging.getLogger(__name__)
 
 START_TIME = time.monotonic()
 
@@ -116,7 +119,14 @@ def human_bytes(size: int) -> str:
         i += 1
     return f"{size:.2f} {units[i]}"
 
-def load_patches(patches_path: str):
+def load_patches(patches_path=None):
+    logger = log.getChild("patch")
+    if patches_path:
+        load_local_patches(patches_path, logger)
+
+    load_entrypoint_plugins(logger)
+
+def load_local_patches(patches_path: str, logger: logging.Logger):
     patches_path = Path(patches_path).resolve()
     if not patches_path.exists():
         return
@@ -128,9 +138,11 @@ def load_patches(patches_path: str):
 
     for item in patches_path.iterdir():
         if item.is_file() and item.suffix == ".py":
+            logger.info("Loading %s", item.stem)
             module_name = f"{package_name}.{item.stem}"
             importlib.import_module(module_name)
-        elif item.is_dir():
+        elif item.is_dir() and item.name != "__pycache__":
+            logger.info("Loading %s", item.name)
             if (item / "__init__.py").exists():
                 module_name = f"{package_name}.{item.name}"
                 importlib.import_module(module_name)
@@ -140,3 +152,11 @@ def load_patches(patches_path: str):
                     module_parts = relative.with_suffix("").parts
                     module_name = ".".join((package_name, *module_parts))
                     importlib.import_module(module_name)
+
+def load_entrypoint_plugins(logger: logging.Logger):
+    for ep in importlib.metadata.entry_points(group="tgfs.plugins"):
+        try:
+            logger.info("Loading %s", ep.name)
+            importlib.import_module(ep.value)
+        except Exception as e: # pylint: disable=W0718
+            print(f"Failed to load plugin {ep.name}: {e}")
