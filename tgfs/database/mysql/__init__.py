@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
+import warnings
 
 import aiomysql
 
@@ -66,7 +67,9 @@ class MySQLDB(FileDB, GroupDB, UserDB, UtilDB):
         statements = read_sql_file("tgfs/database/mysql/schema.sql")
 
         async with self._pool.acquire() as conn:
+            warnings.filterwarnings('ignore', module=r"aiomysql")
             async with conn.cursor() as cur:
                 for stmt in statements:
                     await cur.execute(stmt)
                 await conn.commit()
+            warnings.filterwarnings('default', module=r"aiomysql")
