@@ -81,7 +81,7 @@ async def handle_file_request(req: web.Request, head: bool = None, watch: bool =
         "Content-Type": file.mime_type,
         "Content-Range": f"bytes {from_bytes}-{until_bytes}/{size}",
         "Content-Length": str(until_bytes - from_bytes + 1),
-        "Content-Disposition": f'{'inline' if watch else 'attachment'}; filename="{file.file_name}"',
+        "Content-Disposition": f'{'inline' if watch else 'attachment'}; filename="{" ".join(file.file_name.split())}"',
         "Accept-Ranges": "bytes",
     })
 
