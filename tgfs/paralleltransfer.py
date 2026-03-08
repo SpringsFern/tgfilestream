@@ -161,7 +161,7 @@ class ParallelTransferrer:
         self.dc_managers = defaultdict(lambda: None)
 
     def _get_dc_manager(self, dc_id: int) -> DCConnectionManager:
-        if self.dc_managers[dc_id] is None:
+        if dc_id not in self.dc_managers:
             self.dc_managers[dc_id] = DCConnectionManager(self.client, dc_id, self.log)
         return self.dc_managers[dc_id]
 
