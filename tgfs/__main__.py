@@ -43,7 +43,7 @@ async def additional_check():
         _version = version.split(".", maxsplit=3)
         major = int(_version[0])
         minor = int(_version[1])
-        patch = int(_version[2])
+        # patch = int(_version[2])
         if minor != Version.minor or major != Version.major:
             # ToDo: Create Migration Script execute based on version
             log.warning("version mismatch detected. Old version: %s, Current version: %s", version, __version__)

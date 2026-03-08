@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import asyncio
 from aiohttp import web
 
 from tgfs.config import Config
@@ -26,8 +25,6 @@ from tgfs.database import DB
 
 log = logging.getLogger(__name__)
 routes = web.RouteTableDef()
-
-client_selection_lock = asyncio.Lock()
 
 @routes.get("/")
 async def handle_root(_: web.Request):
@@ -41,7 +38,7 @@ async def handle_root(_: web.Request):
 @routes.get("/wt/{payload}/{sig}")
 async def handle_file_request(req: web.Request, head: bool = None, watch: bool = None) -> web.Response:
     if watch is None:
-        watch: bool = True if "wt" in req.path.split("/") else False
+        watch = req.path.startswith("/wt/")
     if head is None:
         head: bool = req.method == "HEAD"
     payload = req.match_info["payload"]
@@ -68,22 +65,25 @@ async def handle_file_request(req: web.Request, head: bool = None, watch: bool =
     else:
         transfer: ParallelTransferrer = min(multi_clients, key=lambda c: c.users)
         log.debug("Using client %s", transfer.client_id)
-        location = await DB.db.get_location(file,  transfer.client_id)
+        location = await DB.db.get_location(file, transfer.client_id)
         if location is None:
             source = await DB.db.get_source(file.id, user_id)
             location = await update_location(source, transfer)
         body=transfer.download(location, file.dc_id, size, from_bytes, until_bytes)
 
+    disposition = "inline" if watch else "attachment"
+
     return web.Response(
         status=200 if (from_bytes == 0 and until_bytes == size - 1) else 206,
         body=body,
         headers={
-        "Content-Type": file.mime_type,
-        "Content-Range": f"bytes {from_bytes}-{until_bytes}/{size}",
-        "Content-Length": str(until_bytes - from_bytes + 1),
-        "Content-Disposition": f'{'inline' if watch else 'attachment'}; filename="{" ".join(file.file_name.split())}"',
-        "Accept-Ranges": "bytes",
-    })
+            "Content-Type": file.mime_type,
+            "Content-Range": f"bytes {from_bytes}-{until_bytes}/{size}",
+            "Content-Length": str(until_bytes - from_bytes + 1),
+            "Content-Disposition": f'{disposition}; filename="{" ".join(file.file_name.split())}"',
+            "Accept-Ranges": "bytes",
+        }
+    )
 
 @routes.get("/group/{payload}/{sig}")
 async def handle_group_request(req: web.Request) -> web.Response:

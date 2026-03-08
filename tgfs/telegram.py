@@ -35,7 +35,7 @@ session_path = Config.CACHE_DIR / Config.SESSION_NAME
 session_path.mkdir(parents=True, exist_ok=True)
 
 client = TelegramClient(
-    Path(session_path / "tgfilestream"),
+    session_path / "tgfilestream",
     api_id=Config.API_ID,
     api_hash=Config.API_HASH,
     receive_updates=not Config.NO_UPDATE,
@@ -43,8 +43,9 @@ client = TelegramClient(
 )
 
 async def _start_client(token: str) -> Optional[ParallelTransferrer]:
+    bot_id = token.split(":")[0]
     bot = TelegramClient(
-        Path(session_path / token.split(":")[0]),
+        session_path / bot_id,
         api_id=Config.API_ID,
         api_hash=Config.API_HASH,
         receive_updates=False
@@ -64,7 +65,7 @@ async def _start_client(token: str) -> Optional[ParallelTransferrer]:
         transfer.post_init()
         return transfer
     except Exception as e: # pylint: disable=W0718
-        log.error("Faied to Start Client %s: %s", token.split(":")[0], e)
+        log.error("Failed to Start Client %s: %s", bot_id, e)
         return None
 
 async def start_clients():
@@ -80,7 +81,7 @@ def load_plugins(folder_path: str) -> None:
         if module_name in sys.modules:
             log.debug("Already Imported %s, skipping", module_name)
             continue
-        spec = importlib.util.spec_from_file_location(module_name, str(file))
+        spec = importlib.util.spec_from_file_location(module_name, file)
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
         module.__package__ = package_prefix
