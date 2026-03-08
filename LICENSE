@@ -629,7 +629,7 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the "copyright" line and a pointer to where the full notice is found.
 
-TG-FileStream – A web server and Telegram client that acts as a proxy between the Telegram servers and an HTTP client to enable file downloads.
+tgfilestream – A web server and Telegram client that acts as a proxy between the Telegram servers and an HTTP client to enable file downloads.
 
     Copyright (C)2025-2026 DeekshithSH
 

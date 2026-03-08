@@ -1,4 +1,4 @@
-# TG-FileStream
+# tgfilestream
 # Copyright (C) 2025-2026 Deekshith SH
 
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ from tgfs.utils.config_utils import ConfigBase
 log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(
-    prog="tgfilestream", description="TG-FileStream server",)
+    prog="tgfilestream", description="tgfilestream server",)
 parser.add_argument("--host", help="Bind host")
 parser.add_argument("--port", type=int, help="Bind port")
 parser.add_argument("--public-url", help="Public base URL")

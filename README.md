@@ -1,9 +1,9 @@
-# TG-FileStream
+# tgfilestream
 
 > This project is released under the **GNU AGPL v3** license.  
 > You are free to use, modify, and distribute it — as long as you share your changes under the same license.
 
-**TG-FileStream** is a lightweight web server and Telegram client that acts as a proxy between Telegram servers and HTTP clients, allowing direct downloads of Telegram media files via HTTP.
+**tgfilestream** is a lightweight web server and Telegram client that acts as a proxy between Telegram servers and HTTP clients, allowing direct downloads of Telegram media files via HTTP.
 
 > 📌 Check out [TODO.md](./TODO.md) for the latest development progress and planned features.
 
@@ -11,7 +11,7 @@
 
 ## 📝 Notes
 
-- If you want one without database checkout [DeekshithSH/tgfilestream](https://github.com/DeekshithSH/tgfilestream) or [simple branch](https://github.com/SpringsFern/TG-FileStream/tree/simple)
+- If you want one without database checkout [DeekshithSH/tgfilestream](https://github.com/DeekshithSH/tgfilestream) or [simple branch](https://github.com/SpringsFern/tgfilestream/tree/simple)
 
 ---
 
@@ -27,8 +27,8 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/SpringsFern/TG-FileStream.git
-cd TG-FileStream
+git clone https://github.com/SpringsFern/tgfilestream.git
+cd tgfilestream
 ```
 
 ### 2. Install dependencies
@@ -130,7 +130,7 @@ This will stream the file directly from Telegram servers to the client.
 
 ## 🛠️ Contributing & Reporting Issues
 
-Found a bug or have a feature request? Please [open an issue](https://github.com/SpringsFern/TG-FileStream/issues) on GitHub.
+Found a bug or have a feature request? Please [open an issue](https://github.com/SpringsFern/tgfilestream/issues) on GitHub.
 
 ### 🐞 Reporting Issues
 When reporting a bug, **please include**:

@@ -1,4 +1,4 @@
-# TG-FileStream
+# tgfilestream
 # Copyright (C) 2025-2026 Deekshith SH
 
 # This program is free software: you can redistribute it and/or modify
