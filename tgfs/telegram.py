@@ -22,7 +22,6 @@ from pathlib import Path
 import sys
 from typing import Optional
 from telethon import TelegramClient, functions
-from telethon.sessions import MemorySession
 from telethon.tl.types import InputPeerUser
 
 from tgfs.config import Config
@@ -32,8 +31,11 @@ log = logging.getLogger(__name__)
 
 multi_clients: list[ParallelTransferrer] = []
 
+session_path = Config.CACHE_DIR / Config.SESSION_NAME
+session_path.mkdir(parents=True, exist_ok=True)
+
 client = TelegramClient(
-    "tg-filestream"+Config.SESSION_NAME,
+    Path(session_path / "tgfilestream"),
     api_id=Config.API_ID,
     api_hash=Config.API_HASH,
     receive_updates=not Config.NO_UPDATE,
@@ -42,7 +44,7 @@ client = TelegramClient(
 
 async def _start_client(token: str) -> Optional[ParallelTransferrer]:
     bot = TelegramClient(
-        MemorySession(),
+        Path(session_path / token.split(":")[0]),
         api_id=Config.API_ID,
         api_hash=Config.API_HASH,
         receive_updates=False

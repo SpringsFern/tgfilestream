@@ -3,6 +3,7 @@
 *.env
 test.py
 __pycache__
+/cache
 
 tgfs/patches/*
 !tgfs/patches/__init__.py

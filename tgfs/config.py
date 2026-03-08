@@ -19,29 +19,31 @@ from __future__ import annotations
 import argparse
 import logging
 from os import environ
+from pathlib import Path
 from typing import Optional
 
 from tgfs.utils.config_utils import ConfigBase
 
 log = logging.getLogger(__name__)
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    log.warning("python-dotenv not installed. Skipping .env loading.")
-
 parser = argparse.ArgumentParser(
-    prog="tg-filestream", description="TG-FileStream server",)
+    prog="tgfilestream", description="TG-FileStream server",)
 parser.add_argument("--host", help="Bind host")
 parser.add_argument("--port", type=int, help="Bind port")
 parser.add_argument("--public-url", help="Public base URL")
 parser.add_argument("--connection-limit", type=int, help="Max concurrent connections")
 parser.add_argument("--db-backend", help="Database server", choices=("mysql", "mongodb"))
 parser.add_argument("--no-update", action="store_true", help="Ignore Telegram Updates")
-parser.add_argument("--session", help="Name for current instance", default="")
+parser.add_argument("--session", help="Name for current instance", default="tgfilestream")
 args = parser.parse_args()
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    if args.session:
+        load_dotenv(f"{args.session}.env")
+except ImportError:
+    log.warning("python-dotenv not installed. Skipping .env loading.")
 
 class Config(ConfigBase):
     MYSQL_REQUIRED = {"host", "user", "password", "db"}
@@ -121,6 +123,8 @@ class Config(ConfigBase):
     DEBUG: bool = ConfigBase.env_bool("DEBUG")
     EXT_DEBUG: bool = ConfigBase.env_bool("EXT_DEBUG")
     PATCH_PATH: str = environ.get("PATCH_PATH", "tgfs/patches")
+    CACHE_DIR = Path("cache")
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     # ---------- Security ----------
     SECRET: Optional[bytes] = None
