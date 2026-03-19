@@ -32,7 +32,7 @@ class FileDB(BaseStorage):
                 try:
                     await cur.execute(
                         """
-                        INSERT INTO TGFILE (id, dc_id, size, mime_type, file_name, thumb_size, is_deleted)
+                        INSERT INTO TGFILE (media_id, dc_id, size, mime_type, file_name, thumb_size, is_restricted)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
                         ON DUPLICATE KEY UPDATE
                           dc_id = VALUES(dc_id),
@@ -40,7 +40,7 @@ class FileDB(BaseStorage):
                           mime_type = VALUES(mime_type),
                           file_name = VALUES(file_name),
                           thumb_size = VALUES(thumb_size),
-                          is_deleted = VALUES(is_deleted)
+                          is_restricted = VALUES(is_restricted)
                         """,
                         (
                             file.id, file.dc_id, file.file_size, file.mime_type,
@@ -50,7 +50,7 @@ class FileDB(BaseStorage):
                     )
                     await cur.execute(
                         """
-                        INSERT INTO USER_FILE (user_id, id, source_chat_id, source_msg_id)
+                        INSERT INTO USER_FILE (user_id, media_id, source_chat_id, source_msg_id)
                         VALUES (%s, %s, %s, %s)
                         ON DUPLICATE KEY UPDATE
                           source_chat_id = COALESCE(VALUES(source_chat_id), source_chat_id),
@@ -69,7 +69,7 @@ class FileDB(BaseStorage):
                 try:
                     await cur.execute(
                         """
-                        UPDATE TGFILE SET is_deleted = %s WHERE id = %s
+                        UPDATE TGFILE SET is_restricted = %s WHERE media_id = %s
                         """,
                         (status, file_id)
                     )
@@ -84,15 +84,15 @@ class FileDB(BaseStorage):
                 if user_id is None:
                     await cur.execute(
                         """
-                        SELECT f.id AS file_id,
+                        SELECT f.media_id AS file_id,
                                f.dc_id,
                                f.size AS file_size,
                                f.mime_type,
                                f.file_name,
                                f.thumb_size,
-                               f.is_deleted
+                               f.is_restricted
                         FROM TGFILE f
-                        WHERE f.id = %s
+                        WHERE f.media_id = %s
                         LIMIT 1
                         """,
                         (file_id, )
@@ -100,19 +100,19 @@ class FileDB(BaseStorage):
                 else:
                     await cur.execute(
                         """
-                        SELECT f.id AS file_id,
+                        SELECT f.media_id AS file_id,
                                f.dc_id,
                                f.size AS file_size,
                                f.mime_type,
                                f.file_name,
                                f.thumb_size,
-                               f.is_deleted
+                               f.is_restricted
                         FROM TGFILE f
-                        WHERE f.id = %s
+                        WHERE f.media_id = %s
                         AND EXISTS (
                             SELECT 1
                             FROM USER_FILE uf
-                            WHERE uf.id = f.id
+                            WHERE uf.media_id = f.media_id
                               AND uf.user_id = %s
                         )
                         LIMIT 1
@@ -131,7 +131,7 @@ class FileDB(BaseStorage):
                     mime_type=row["mime_type"],
                     file_name=row["file_name"],
                     thumb_size=row["thumb_size"],
-                    is_deleted=bool(row["is_deleted"]),
+                    is_deleted=bool(row["is_restricted"]),
                 )
 
     async def get_location(self, file: FileInfo, bot_id: int) -> Optional[InputTypeLocation]:
@@ -141,7 +141,7 @@ class FileDB(BaseStorage):
                     """
                     SELECT access_hash, file_reference
                     FROM FILE_LOCATION
-                    WHERE id = %s and bot_id = %s
+                    WHERE media_id = %s and bot_id = %s
                     LIMIT 1
                     """,
                     (file.id, bot_id)
@@ -165,7 +165,7 @@ class FileDB(BaseStorage):
                     """
                     SELECT source_chat_id, source_msg_id, added_at
                     FROM USER_FILE 
-                    WHERE id = %s and user_id = %s
+                    WHERE media_id = %s and user_id = %s
                     LIMIT 1
                     """,
                     (file_id, user_id)
@@ -185,7 +185,7 @@ class FileDB(BaseStorage):
                 try:
                     await cur.execute(
                         """
-                        INSERT INTO FILE_LOCATION (bot_id, id, access_hash, file_reference)
+                        INSERT INTO FILE_LOCATION (bot_id, media_id, access_hash, file_reference)
                         VALUES (%s, %s, %s, %s)
                         ON DUPLICATE KEY UPDATE
                           access_hash = VALUES(access_hash),
@@ -202,9 +202,9 @@ class FileDB(BaseStorage):
                         ) -> AsyncGenerator[tuple[int, str], None]:
 
         base_sql = """
-            SELECT f.id AS file_id, f.file_name
+            SELECT f.media_id AS file_id, f.file_name
             FROM TGFILE f
-            JOIN USER_FILE uf ON f.id = uf.id
+            JOIN USER_FILE uf ON f.media_id = uf.media_id
             WHERE uf.user_id = %s
             ORDER BY uf.added_at DESC
         """
@@ -234,14 +234,14 @@ class FileDB(BaseStorage):
         if full:
             select_clause = "f.*"
         else:
-            select_clause = "f.id AS file_id, f.file_name"
+            select_clause = "f.media_id AS file_id, f.file_name"
 
         base_sql = f"""
             SELECT {select_clause}
             FROM TGFILE f
-            JOIN USER_FILE uf ON f.id = uf.id
+            JOIN USER_FILE uf ON f.media_id = uf.media_id
             WHERE uf.user_id = %s
-              AND f.id IN ({placeholders})
+              AND f.media_id IN ({placeholders})
             ORDER BY uf.added_at DESC
         """
 
@@ -263,7 +263,7 @@ class FileDB(BaseStorage):
                             mime_type=row["mime_type"],
                             file_name=row["file_name"],
                             thumb_size=row["thumb_size"],
-                            is_deleted=bool(row["is_deleted"]),
+                            is_deleted=bool(row["is_restricted"]),
                         )
                 else:
                     async for row in cur:
@@ -277,7 +277,7 @@ class FileDB(BaseStorage):
                     """
                     SELECT user_id
                     FROM USER_FILE
-                    WHERE id = %s
+                    WHERE media_id = %s
                     """,
                     (file_id)
                 )
@@ -307,7 +307,7 @@ class FileDB(BaseStorage):
                     await cur.execute(
                         """
                         DELETE FROM TGFILE
-                        WHERE id = %s
+                        WHERE media_id = %s
                         LIMIT 1
                         """,
                         (file_id)
@@ -326,7 +326,7 @@ class FileDB(BaseStorage):
                     await cur.execute(
                         """
                         DELETE FROM USER_FILE
-                        WHERE id = %s AND user_id = %s
+                        WHERE media_id = %s AND user_id = %s
                         LIMIT 1
                         """,
                         (file_id, user_id)

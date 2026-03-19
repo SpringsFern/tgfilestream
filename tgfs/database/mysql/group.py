@@ -64,7 +64,7 @@ class GroupDB(BaseStorage):
 
                         await cur.execute(
                             """
-                            INSERT INTO FILE_GROUP_FILE (group_id, user_id, id, order_index)
+                            INSERT INTO FILE_GROUP_FILE (group_id, user_id, media_id, order_index)
                             VALUES (%s, %s, %s, %s)
                             ON DUPLICATE KEY UPDATE
                               order_index = VALUES(order_index)
@@ -124,7 +124,7 @@ class GroupDB(BaseStorage):
 
                 await cur.execute(
                     """
-                    SELECT id
+                    SELECT media_id
                     FROM FILE_GROUP_FILE
                     WHERE group_id = %s
                     ORDER BY order_index ASC
@@ -135,7 +135,7 @@ class GroupDB(BaseStorage):
                 if not rows:
                     return gi
 
-                gi.files.extend([int(r["id"]) for r in rows])
+                gi.files.extend([int(r["media_id"]) for r in rows])
                 return gi
 
     async def delete_group(self, group_id: int, user_id: int) -> None:
@@ -182,7 +182,7 @@ class GroupDB(BaseStorage):
                           ON fg.group_id = gff.group_id
                         SET gff.order_index = %s
                         WHERE gff.group_id = %s
-                          AND gff.id = %s
+                          AND gff.media_id = %s
                           AND fg.user_id = %s
                         """,
                         (new_order, group_id, file_id, user_id)
