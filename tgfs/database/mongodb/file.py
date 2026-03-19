@@ -40,7 +40,7 @@ class FileDB(BaseStorage):
                     "mime_type": file.mime_type,
                     "file_name": file.file_name,
                     "thumb_size": file.thumb_size,
-                    "is_deleted": file.is_deleted,
+                    "is_restricted": file.is_deleted,
                     f"users.{user_id}": {
                         "chat_id": source.chat_id,
                         "message_id": source.message_id,
@@ -54,7 +54,7 @@ class FileDB(BaseStorage):
     async def update_file_restriction(self, file_id: int, status: bool) -> None:
         await self.files.update_one(
             {"_id": file_id},
-            {"$set": {"is_deleted": status}},
+            {"$set": {"is_restricted": status}},
         )
 
     async def get_file(self, file_id: int, user_id: Optional[int] = None) -> Optional[FileInfo]:
@@ -73,7 +73,7 @@ class FileDB(BaseStorage):
             mime_type=doc.get("mime_type"),
             file_name=doc.get("file_name"),
             thumb_size=doc.get("thumb_size"),
-            is_deleted=bool(doc.get("is_deleted", False)),
+            is_deleted=bool(doc.get("is_restricted", False)),
         )
 
     async def get_location(self, file: FileInfo, bot_id: int) -> Optional[InputTypeLocation]:
@@ -168,7 +168,7 @@ class FileDB(BaseStorage):
                     mime_type=doc.get("mime_type"),
                     file_name=doc.get("file_name"),
                     thumb_size=doc.get("thumb_size"),
-                    is_deleted=bool(doc.get("is_deleted", False)),
+                    is_deleted=bool(doc.get("is_restricted", False)),
                 )
         else:
             async for doc in cursor:

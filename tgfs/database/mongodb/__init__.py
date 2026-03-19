@@ -71,7 +71,7 @@ class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
 
     async def _create_indexes(self) -> None:
         await self.files.create_index("users.user_id")
-        await self.files.create_index("is_deleted")
+        await self.files.create_index("is_restricted")
         await self.files.create_index("users.added_at")
 
         await self.groups.create_index("user_id")
