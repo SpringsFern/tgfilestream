@@ -52,6 +52,7 @@ async def additional_check():
 
 async def start() -> None:
     log.info("Initializing Database")
+    DB.load_config()
     await DB.init()
     await load_configs()
     log.info("Running Checks")

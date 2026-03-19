@@ -109,14 +109,6 @@ class Config(ConfigBase):
     # ---------- DB ----------
     DB_BACKEND: str = args.db_backend or environ.get("DB_BACKEND", "").lower()
 
-    if DB_BACKEND in DB_LIST:
-        DB_CONFIG: dict = ConfigBase.load_backend_config(*DB_LIST[DB_BACKEND])
-    else:
-        raise RuntimeError(
-            f"Unsupported DB_BACKEND '{DB_BACKEND}'. "
-            f"Valid options: {DB_LIST.keys()}"
-        )
-
     SESSION_NAME: str = args.session
 
     # ---------- Extras ----------

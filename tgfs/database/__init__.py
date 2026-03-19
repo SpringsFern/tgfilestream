@@ -27,6 +27,17 @@ _BACKENDS: dict[str, type[BaseStorage]] = {
 
 class DB:
     db: Optional[BaseStorage] = None
+    config: dict
+
+    @classmethod
+    def load_config(cls):
+        if Config.DB_BACKEND in Config.DB_LIST:
+            cls.config: dict = Config.load_backend_config(*Config.DB_LIST[Config.DB_BACKEND])
+        else:
+            raise RuntimeError(
+                f"Unsupported DB_BACKEND '{Config.DB_BACKEND}'. "
+                f"Valid options: {Config.DB_LIST.keys()}"
+            )
 
     @classmethod
     async def init(cls) -> None:
@@ -35,7 +46,7 @@ class DB:
             db_cls = _BACKENDS[backend]
             cls.db = db_cls()
 
-        await cls.db.connect(**Config.DB_CONFIG)
+        await cls.db.connect(**cls.config)
         await cls.db.init_db()
 
     @classmethod
