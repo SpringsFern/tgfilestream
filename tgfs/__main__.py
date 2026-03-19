@@ -21,7 +21,7 @@ from telethon import functions
 from telethon.tl.types import User
 
 from tgfs.app import init_app
-from tgfs.info import Version, __version__
+from tgfs.info import __version__
 from tgfs.log import log
 from tgfs.config import Config
 from tgfs.paralleltransfer import ParallelTransferrer
@@ -36,19 +36,26 @@ runner = web.AppRunner(app, handler_cancellation=True)
 
 async def additional_check():
     version = await DB.db.get_config_value("VERSION")
-    if version != __version__:
-        if not version:
-            await DB.db.set_config_value("VERSION", __version__)
-            return
-        _version = version.split(".", maxsplit=3)
-        major = int(_version[0])
-        minor = int(_version[1])
-        # patch = int(_version[2])
-        if minor != Version.minor or major != Version.major:
-            # ToDo: Create Migration Script execute based on version
-            log.warning("version mismatch detected. Old version: %s, Current version: %s", version, __version__)
-        await DB.db.set_config_value("VERSION", __version__)
+    target = __version__
+
+    if not version:
+        await DB.db.set_config_value("VERSION", target)
+        return
+
+    if version != target:
+        log.warning(
+            "Version mismatch detected. Old: %s → New: %s",
+            version, target
+        )
+
+        mg_status = await DB.db.migrate(version, target)
+        if not mg_status:
+            raise RuntimeError(
+                "unable to migrate database to new version"
+            )
+
         await DB.db.set_config_value("OLD_VERSION", version)
+        await DB.db.set_config_value("VERSION", target)
 
 async def start() -> None:
     log.info("Initializing Database")

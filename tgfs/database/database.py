@@ -50,6 +50,11 @@ class BaseStorage(ABC):
     async def init_db(self) -> None:
         """Create tables if they don't exist."""
         raise NotImplementedError
+    
+    @abstractmethod
+    async def migrate(self, current: str, target: str) -> bool:
+        """Migrate database to new version and return status"""
+        raise NotImplementedError
 
     @abstractmethod
     async def add_file(self, user_id: int, file: FileInfo, source: FileSource) -> None:
