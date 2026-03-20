@@ -160,3 +160,6 @@ def load_entrypoint_plugins(logger: logging.Logger):
             importlib.import_module(ep.value)
         except Exception as e: # pylint: disable=W0718
             logger.info(f"Failed to load plugin {ep.name}: {e}")
+
+def parse_version(v: str):
+    return tuple(map(int, v.split(".")))

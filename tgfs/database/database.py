@@ -25,6 +25,7 @@ class BaseStorage(ABC):
     Abstract base class for storage backends.
     """
 
+    MIN_VERSION: str
     is_connected: bool
 
     @abstractmethod
@@ -49,11 +50,6 @@ class BaseStorage(ABC):
     @abstractmethod
     async def init_db(self) -> None:
         """Create tables if they don't exist."""
-        raise NotImplementedError
-    
-    @abstractmethod
-    async def migrate(self, current: str, target: str) -> bool:
-        """Migrate database to new version and return status"""
         raise NotImplementedError
 
     @abstractmethod

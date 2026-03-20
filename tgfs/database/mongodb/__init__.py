@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib.util
 from pathlib import Path
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
@@ -27,21 +26,9 @@ from .group import GroupDB
 from .user import UserDB
 from .utils import UtilDB
 
-SUPPORTED_VERSION = __version__
-
-def parse_version(v: str):
-    return tuple(map(int, v.split(".")))
-
-def extract_range(file: Path):
-    name = file.stem
-    left, right = name.split("_to_")
-
-    from_v = left[1:].replace("_", ".")
-    to_v = right[1:].replace("_", ".")
-
-    return parse_version(from_v), parse_version(to_v), from_v, to_v
-
 class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
+    MIN_VERSION = "0.0.2"
+
     is_connected: bool = False
     client: AsyncIOMotorClient
     db: AsyncIOMotorDatabase
@@ -79,35 +66,3 @@ class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
 
         await self.users.create_index("ban_date")
         await self.users.create_index("warns")
-
-    async def migrate(self, current: str, target: str) -> bool:
-        migration_dir = Path(__file__).resolve().parent / "migration"
-
-        current_v = parse_version(current)
-        target_v = parse_version(target)
-        supported_v = parse_version(SUPPORTED_VERSION)
-        if supported_v < target_v:
-            return False
-
-        while current_v < target_v:
-            candidates = []
-
-            for file in migration_dir.glob("v*_to_v*.py"):
-                from_v, to_v, _, _ = extract_range(file)
-
-                if from_v <= current_v < to_v:
-                    candidates.append((to_v, file))
-
-            if not candidates:
-                return
-
-            candidates.sort(key=lambda x: x[0])
-            next_v, file = candidates[0]
-
-            spec = importlib.util.spec_from_file_location(file.stem.replace(".", "_"), file)
-            start = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(start)
-            await start.run(self)
-
-            current_v = next_v
-        return True

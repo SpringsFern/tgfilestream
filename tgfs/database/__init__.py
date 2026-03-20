@@ -26,6 +26,7 @@ _BACKENDS: dict[str, type[BaseStorage]] = {
 }
 
 class DB:
+    MIN_VERSION: str
     db: Optional[BaseStorage] = None
     config: dict
 
@@ -45,6 +46,7 @@ class DB:
             backend = Config.DB_BACKEND
             db_cls = _BACKENDS[backend]
             cls.db = db_cls()
+            cls.MIN_VERSION = cls.db.MIN_VERSION
 
         await cls.db.connect(**cls.config)
         await cls.db.init_db()

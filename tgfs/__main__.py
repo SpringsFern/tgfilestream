@@ -27,7 +27,7 @@ from tgfs.config import Config
 from tgfs.paralleltransfer import ParallelTransferrer
 from tgfs.telegram import client, load_plugins, multi_clients, start_clients
 from tgfs.database import DB
-from tgfs.utils.utils import load_configs, load_patches
+from tgfs.utils.utils import load_configs, load_patches, parse_version
 
 load_patches(Config.PATCH_PATH)
 
@@ -36,26 +36,18 @@ runner = web.AppRunner(app, handler_cancellation=True)
 
 async def additional_check():
     version = await DB.db.get_config_value("VERSION")
+    version_v = parse_version(version)
     target = __version__
+    # target_v = parse_version(target)
+    min_target = parse_version(DB.MIN_VERSION)
 
     if not version:
         await DB.db.set_config_value("VERSION", target)
         return
 
-    if version != target:
-        log.warning(
-            "Version mismatch detected. Old: %s → New: %s",
-            version, target
-        )
-
-        mg_status = await DB.db.migrate(version, target)
-        if not mg_status:
-            raise RuntimeError(
-                "unable to migrate database to new version"
-            )
-
-        await DB.db.set_config_value("OLD_VERSION", version)
-        await DB.db.set_config_value("VERSION", target)
+    if version_v < min_target:
+        log.error("Version mismatch, update database structure to match new version")
+        raise RuntimeError(f"Version mismatch detected. Old: {version} → New: {target}")
 
 async def start() -> None:
     log.info("Initializing Database")

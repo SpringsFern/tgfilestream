@@ -1,7 +1,7 @@
 import aiomysql
 
 async def run(db):
-    async with db._pool.acquire() as conn:
+    async with db._pool.acquire() as conn: # pylint: disable=W0212
         conn: aiomysql.Connection
         async with conn.cursor() as cur:
             cur: aiomysql.Cursor
