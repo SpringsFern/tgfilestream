@@ -95,6 +95,7 @@ python3 -m tgfs
 | `CONNECTION_LIMIT`   | `5`                    | Number of connections to create per DC for a single client                   |
 | `DOWNLOAD_PART_SIZE` | `1048576 (1MB)`        | Number of bytes to request in a single chunk                                 |
 | `NO_UPDATE`          | `False`                | Whether to reply to messages sent to the bot (True to disable replies)       |
+| `NO_MAIN`            | `False`                | Skip main bot and use only worker bots for Telegram file requests            |
 | `SEQUENTIAL_UPDATES` | `False`                | Handle telegram updates sequentially                                         |
 | `FILE_INDEX_LIMIT`   | `10`                   | Number of files to display at once with `/files` command                     |
 | `MAX_WARNS`          | `3`                    | Maximum number of warns before user get banned                               |

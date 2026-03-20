@@ -24,7 +24,7 @@ from telethon.errors import ButtonUrlInvalidError
 
 from tgfs.config import Config
 from tgfs.database import DB
-from tgfs.telegram import client, multi_clients
+from tgfs.telegram import client
 from tgfs.utils.translation import get_lang
 from tgfs.utils.utils import check_get_user, make_token
 from tgfs.utils.types import FileInfo, FileSource, InputTypeLocation, Status
@@ -59,7 +59,7 @@ async def handle_file_message(evt: events.NewMessage.Event, msg=None) -> None:
     )
     await DB.db.add_file(user.user_id, file_info, file_source)
     await DB.db.upsert_location(
-        multi_clients[0].client_id,
+        Config.BOT_ID,
         location
     )
     # fwd_msg: Message = await msg.forward_to(Config.BIN_CHANNEL)
@@ -143,7 +143,7 @@ async def handle_done_command(evt: events.NewMessage.Event, user=None) -> None:
                 )
                 await DB.db.add_file(user.user_id, file_info, file_source)
                 await DB.db.upsert_location(
-                    multi_clients[0].client_id,
+                    Config.BOT_ID,
                     location
                 )
                 order += 1

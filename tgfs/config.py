@@ -32,14 +32,15 @@ parser.add_argument("--public-url", help="Public base URL")
 parser.add_argument("--connection-limit", type=int, help="Max concurrent connections")
 parser.add_argument("--db-backend", help="Database server", choices=["mongodb"])
 parser.add_argument("--no-update", action="store_true", help="Ignore Telegram Updates")
-parser.add_argument("--session", help="Name for current instance", default="tgfilestream")
+parser.add_argument("--no-main", action="store_true",
+    help="Skip main bot and use only worker bots for Telegram file requests")
+parser.add_argument("--env", nargs="+", help="path(s) to .env files", default=[".env"])
 args = parser.parse_args()
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
-    if args.session:
-        load_dotenv(f"{args.session}.env")
+    for env_path in args.env:
+        load_dotenv(env_path)
 except ImportError:
     log.warning("python-dotenv not installed. Skipping .env loading.")
 
@@ -65,6 +66,7 @@ class Config(ConfigBase):
 
     # ---------- Bot behavior ----------
     NO_UPDATE: bool = args.no_update or ConfigBase.env_bool("NO_UPDATE")
+    NO_MAIN: bool = args.no_main or ConfigBase.env_bool("NO_MAIN")
     SEQUENTIAL_UPDATES: bool = ConfigBase.env_bool("SEQUENTIAL_UPDATES")
     FILE_INDEX_LIMIT: int = ConfigBase.env_int("FILE_INDEX_LIMIT", 10)
     MAX_WARNS: int = ConfigBase.env_int("MAX_WARNS", 3)
@@ -85,7 +87,7 @@ class Config(ConfigBase):
     # ---------- DB ----------
     DB_BACKEND: str = args.db_backend or environ.get("DB_BACKEND", "mongodb").lower()
 
-    SESSION_NAME: str = args.session
+    SESSION_NAME: str = str(PORT)
 
     # ---------- Extras ----------
     DEBUG: bool = ConfigBase.env_bool("DEBUG")

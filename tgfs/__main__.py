@@ -72,11 +72,12 @@ async def start() -> None:
             break
     me: User = await client.get_me()
     Config.BOT_ID = me.id
-    transfer = ParallelTransferrer(client, me.id)
-    transfer.post_init()
-    multi_clients.append(transfer)
     log.info("Starting Additional Clients")
     await start_clients()
+    if not (Config.NO_MAIN or multi_clients):
+        transfer = ParallelTransferrer(client, me.id)
+        transfer.post_init()
+        multi_clients.append(transfer)
     log.info("Starting HTTP Server")
     await runner.setup()
     await web.TCPSite(runner, Config.HOST, Config.PORT).start()
