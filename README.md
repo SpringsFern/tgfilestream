@@ -87,7 +87,7 @@ python3 -m tgfs
 | `API_HASH`           | ✅                     | API hash from [my.telegram.org](https://my.telegram.org)                     |
 | `BOT_TOKEN`          | ✅                     | Bot token from [@BotFather](https://t.me/BotFather)                          |
 | `BIN_CHANNEL`        | ✅                     | Channel ID where files sent to the bot are stored                            |
-| `DB_BACKEND`         | ✅                     | Which Database server to use. either `mongodb` or `mysql`                    |
+| `DB_BACKEND`         | `mongodb`              | Which Database server to use.                                                |
 | `HOST`               | `0.0.0.0`              | Host address to bind the server (default: `0.0.0.0`)                         |
 | `PORT`               | `8080`                 | Port to run the server on (default: `8080`)                                  |
 | `PUBLIC_URL`         | `https://0.0.0.0:8080` | Public-facing URL used to generate download links                            |
@@ -110,19 +110,6 @@ python3 -m tgfs
 | `MULTI_TOKEN1` |                  | MULTI_TOKEN1=1234567890:AAExampleBotTokenGeneratedHere|
 | `MULTI_TOKEN2` |                  | MULTI_TOKEN2=0987654321:AAExampleBotTokenGeneratedHere|
 | `MULTI_TOKEN3` |                  | MULTI_TOKEN3=5432167890:AAExampleBotTokenGeneratedHere|
-
-### MySQL Environment Variables
-Set the following variables if you choose MySQL as the database in `DB_BACKEND`
-
-| Variable         | Required/Default | Description                                |
-| ---------------- | ---------------- | ------------------------------------------ |
-| `MYSQL_HOST`     | ✅               | MySQL DataBase Host Name                   |
-| `MYSQL_PORT`     | ✅               | MySQL Database Port Number                 |
-| `MYSQL_USER`     | ✅               | MySQL Database Username                    |
-| `MYSQL_PASSWORD` | ✅               | MySQL Database Password                    |
-| `MYSQL_DB`       | ✅               | MySQL Database Name                        |
-| `MYSQL_MINSIZE`  | `1`              | Minimum sizes of the MySQL Connection pool |
-| `MYSQL_MAXSIZE`  | `5`              | Maximum sizes of the MySQL Connection pool |
 
 ### MongoDB Environment Variables
 Set the following variables if you choose MongoDB as the database in `DB_BACKEND`

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 import argparse
 import logging
 from os import environ
@@ -32,7 +30,7 @@ parser.add_argument("--host", help="Bind host")
 parser.add_argument("--port", type=int, help="Bind port")
 parser.add_argument("--public-url", help="Public base URL")
 parser.add_argument("--connection-limit", type=int, help="Max concurrent connections")
-parser.add_argument("--db-backend", help="Database server", choices=("mysql", "mongodb"))
+parser.add_argument("--db-backend", help="Database server", choices=["mongodb"])
 parser.add_argument("--no-update", action="store_true", help="Ignore Telegram Updates")
 parser.add_argument("--session", help="Name for current instance", default="tgfilestream")
 args = parser.parse_args()
@@ -46,28 +44,6 @@ except ImportError:
     log.warning("python-dotenv not installed. Skipping .env loading.")
 
 class Config(ConfigBase):
-    MYSQL_REQUIRED = {"host", "user", "password", "db"}
-    MYSQL_CONFIG = {
-        "host": (str, None),
-        "port": (int, 3306),
-        "user": (str, None),
-        "password": (str, None),
-        "db": (str, None),
-        "minsize": (int, 1),
-        "maxsize": (int, 5),
-    }
-
-    MONGODB_REQUIRED = {"uri"}
-    MONGODB_CONFIG = {
-        "uri": (str, None),
-        "dbname": (str, "TGFS")
-    }
-
-    DB_LIST = {
-        "mysql": ("MYSQL", MYSQL_CONFIG, MYSQL_REQUIRED),
-        "mongodb": ("MONGODB", MONGODB_CONFIG, MONGODB_REQUIRED)
-    }
-
     # ---------- Telegram ----------
     API_ID: int = int(environ["API_ID"])
     API_HASH: str = environ["API_HASH"]
@@ -107,7 +83,7 @@ class Config(ConfigBase):
         ALLOWED_IDS = ALLOWED_IDS | ADMIN_IDS
 
     # ---------- DB ----------
-    DB_BACKEND: str = args.db_backend or environ.get("DB_BACKEND", "").lower()
+    DB_BACKEND: str = args.db_backend or environ.get("DB_BACKEND", "mongodb").lower()
 
     SESSION_NAME: str = args.session
 

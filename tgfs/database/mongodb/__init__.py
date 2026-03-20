@@ -26,6 +26,12 @@ from .group import GroupDB
 from .user import UserDB
 from .utils import UtilDB
 
+MONGODB_REQUIRED = {"uri"}
+MONGODB_CONFIG = {
+    "uri": (str, None),
+    "dbname": (str, "TGFS")
+}
+
 class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
     MIN_VERSION = "0.0.2"
 

@@ -46,7 +46,8 @@ async def additional_check():
         return
 
     if version_v < min_target:
-        log.error("Version mismatch, update database structure to match new version")
+        log.error("Version mismatch, update database structure to match new version" \
+        "check README.md for more information")
         raise RuntimeError(f"Version mismatch detected. Old: {version} → New: {target}")
 
 async def start() -> None:

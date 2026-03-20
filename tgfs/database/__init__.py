@@ -14,16 +14,47 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from os import environ
+from typing import Any, Optional
 from tgfs.config import Config
-from tgfs.database.mysql import MySQLDB
-from tgfs.database.mongodb import MongoDB
+from tgfs.database.mongodb import MongoDB, MONGODB_CONFIG, MONGODB_REQUIRED
 from tgfs.database.database import BaseStorage
 
-_BACKENDS: dict[str, type[BaseStorage]] = {
-    "mysql": MySQLDB,
-    "mongodb": MongoDB,
-}
+class DBConfig:
+    DB_LIST = {
+        "mongodb": ("MONGODB", MONGODB_CONFIG, MONGODB_REQUIRED)
+    }
+
+    DB_CLASS: dict[str, type[BaseStorage]] = {
+        "mongodb": MongoDB,
+    }
+
+    @staticmethod
+    def load_backend_config(
+        prefix: str,
+        schema: dict[str, tuple[type, Any]],
+        required: set[str],
+    ) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {}
+        missing: list[str] = []
+
+        for key, (typ, default) in schema.items():
+            env_key = f"{prefix}_{key.upper()}"
+
+            if env_key in environ:
+                kwargs[key] = typ(environ[env_key])
+            elif default is not None:
+                kwargs[key] = default
+            else:
+                missing.append(env_key)
+
+        if set(missing) & required:
+            raise RuntimeError(
+                f"Missing required environment variables: {', '.join(missing)}"
+            )
+
+        return kwargs
+
 
 class DB:
     MIN_VERSION: str
@@ -32,19 +63,19 @@ class DB:
 
     @classmethod
     def load_config(cls):
-        if Config.DB_BACKEND in Config.DB_LIST:
-            cls.config: dict = Config.load_backend_config(*Config.DB_LIST[Config.DB_BACKEND])
+        if Config.DB_BACKEND in DBConfig.DB_LIST:
+            cls.config: dict = DBConfig.load_backend_config(*DBConfig.DB_LIST[Config.DB_BACKEND])
         else:
             raise RuntimeError(
                 f"Unsupported DB_BACKEND '{Config.DB_BACKEND}'. "
-                f"Valid options: {Config.DB_LIST.keys()}"
+                f"Valid options: {DBConfig.DB_LIST.keys()}"
             )
 
     @classmethod
     async def init(cls) -> None:
         if cls.db is None:
             backend = Config.DB_BACKEND
-            db_cls = _BACKENDS[backend]
+            db_cls = DBConfig.DB_CLASS[backend]
             cls.db = db_cls()
             cls.MIN_VERSION = cls.db.MIN_VERSION
 
