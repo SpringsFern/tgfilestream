@@ -36,19 +36,18 @@ runner = web.AppRunner(app, handler_cancellation=True)
 
 async def additional_check():
     version = await DB.db.get_config_value("VERSION")
-    version_v = parse_version(version)
-    target = __version__
-    # target_v = parse_version(target)
-    min_target = parse_version(DB.MIN_VERSION)
-
     if not version:
-        await DB.db.set_config_value("VERSION", target)
+        await DB.db.set_config_value("VERSION", __version__)
         return
+
+    version_v = parse_version(version)
+    # target_v = parse_version(__version__)
+    min_target = parse_version(DB.MIN_VERSION)
 
     if version_v < min_target:
         log.error("Version mismatch, update database structure to match new version" \
         "check README.md for more information")
-        raise RuntimeError(f"Version mismatch detected. Old: {version} → New: {target}")
+        raise RuntimeError(f"Version mismatch detected. Old: {version} → New: {__version__}")
 
 async def start() -> None:
     log.info("Initializing Database")
