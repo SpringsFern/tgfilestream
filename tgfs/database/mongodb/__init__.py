@@ -33,7 +33,7 @@ MONGODB_CONFIG = {
 }
 
 class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
-    MIN_VERSION = "0.0.2"
+    MIN_VERSION = "0.0.1"
 
     is_connected: bool = False
     client: AsyncIOMotorClient
@@ -60,6 +60,7 @@ class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
             self.is_connected = False
 
     async def init_db(self) -> None:
+        await self._migrate()
         await self._create_indexes()
 
     async def _create_indexes(self) -> None:
@@ -72,3 +73,17 @@ class MongoDB(FileDB, GroupDB, UserDB, UtilDB, BaseStorage):
 
         await self.users.create_index("ban_date")
         await self.users.create_index("warns")
+
+    async def _migrate(self):
+        version = await self.get_config_value("VERSION")
+        if not version:
+            await self.set_config_value("VERSION", __version__)
+            return
+
+        version_v = tuple(map(int, version.split(".")))
+        if version_v < (0,0,2):
+            await self.files.update_many(
+                {"is_deleted": {"$exists": True}},
+                {"$rename": {"is_deleted": "is_restricted"}}
+            )
+        await self.set_config_value("VERSION", __version__)
