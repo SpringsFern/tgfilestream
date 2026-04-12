@@ -30,7 +30,7 @@ from tgfs.utils.utils import parse_token
 log = logging.getLogger(__name__)
 
 
-async def send_file(_: events.NewMessage.Event, user_id: int, file_id: int) -> None:
+async def send_file(evt: events.NewMessage.Event, user_id: int, file_id: int) -> None:
     lang = get_lang(user_id)
     file_info = await DB.db.get_file(file_id, user_id)
     if file_info is None:
@@ -38,7 +38,7 @@ async def send_file(_: events.NewMessage.Event, user_id: int, file_id: int) -> N
     location = await DB.db.get_location(file_info, Config.BOT_ID)
     input_media = InputMediaPhoto(
         location) if location.thumb_size else InputMediaDocument(location)
-    await client.send_file(user_id, input_media, caption=file_info.file_name)
+    await client.send_file(evt.sender_id, input_media, caption=file_info.file_name)
 
 
 async def handle_file_url(evt: events.NewMessage.Event, user: User, match: re.Match) -> None:
