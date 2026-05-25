@@ -15,24 +15,6 @@
 
 ---
 
-## ⚠ Database Migration
-
-If you encounter the following error:
-
-```
-RuntimeError: Version mismatch detected. Old: X → New: Y
-```
-
-it means your database structure is outdated.
-
-Please follow the migration instructions in:
-
-👉 [`migration/README.md`](migration/README.md)
-
-You must run the migration script before starting the updated version.
-
----
-
 ## 🚀 Features
 
 - Download Telegram media via HTTP links
