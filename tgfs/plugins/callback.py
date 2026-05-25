@@ -40,7 +40,7 @@ async def handle_tos_button(evt: events.CallbackQuery.Event):
     # msg = await client.get_messages(user_id, ids=msg_id)
     # await handle_file_message(evt, msg)
     await evt.answer(lang.ACCEPTED_TOS_TEXT)
-    await evt.edit(buttons=[[Button.inline(lang.AGREED, b"tos_agreed")]])
+    await evt.edit(buttons=[[Button.inline(lang.AGREED, b"tos_agreed", style="success")]])
 
 
 @client.on(events.CallbackQuery(pattern=r"^(fileinfo|groupinfo)_page_(\d+)$"))
@@ -76,7 +76,7 @@ async def handle_list_page(evt: events.CallbackQuery.Event) -> None:
 
     async for item_id, name in items_gen:
         buttons.append([
-            Button.inline(name, data=f"{kind}_file_{item_id}_{page_no}")
+            Button.inline(name, data=f"{kind}_file_{item_id}_{page_no}", style="primary")
         ])
 
     if not buttons:
@@ -85,19 +85,20 @@ async def handle_list_page(evt: events.CallbackQuery.Event) -> None:
 
     nav = []
     if page_no > 0:
-        nav.append(Button.inline("<<", f"{kind}_page_{page_no - 1}"))
+        nav.append(Button.inline("<<", f"{kind}_page_{page_no - 1}", style="success"))
 
     nav.append(Button.inline(
         lang.FILES_BUTTON_CURRENT.format(
             page_no=page_no + 1, total_pages=total_pages),
-        b"noop"
+        b"noop",
+        style="success"
     ))
 
     if page_no + 1 < total_pages:
-        nav.append(Button.inline(">>", f"{kind}_page_{page_no + 1}"))
+        nav.append(Button.inline(">>", f"{kind}_page_{page_no + 1}", style="success"))
 
     buttons.append(nav)
-    buttons.append([Button.inline(lang.BACK_TEXT, b"files_menu")])
+    buttons.append([Button.inline(lang.BACK_TEXT, b"files_menu", style="danger")])
 
     await evt.edit(
         lang.TOTAL_LABEL_COUNT.format(
@@ -134,17 +135,17 @@ async def handle_fileinfo_button(evt: events.CallbackQuery.Event):
         ),
         buttons=[
             [
-                Button.url(lang.DOWNLOAD, url),
-                Button.url(lang.WATCH, wt_url),
+                Button.url(lang.DOWNLOAD, url, style="primary"),
+                Button.url(lang.WATCH, wt_url, style="primary"),
             ],
             [
                 Button.inline(
                     lang.DELETE, (
                         f"fileinfo_delconf2_{file_info.id}_{page_no}"
                         f"{f'_{group_id}' if group_id else ''}"
-                    )),
+                    ), style="danger"),
                 Button.inline(lang.GET_FILE_TEXT,
-                              f"fileinfo_get_{file_info.id}")
+                              f"fileinfo_get_{file_info.id}", style="success")
             ],
             [Button.inline(
                 lang.BACK_TEXT, f"groupinfo_file_{group_id}_{page_no}" if group_id else f"fileinfo_page_{page_no}")]
@@ -170,12 +171,14 @@ async def handle_groupinfo_button(evt: events.CallbackQuery.Event):
     if file_info.files and len(file_info.files) <= 98:
         async for file_id, name in DB.db.get_files2(user_id, file_info.files):
             buttons.append(
-                [Button.inline(name, f"fileinfo_file_{file_id}_{page_no}_{group_id}")])
+                [Button.inline(name, f"fileinfo_file_{file_id}_{page_no}_{group_id}", style="primary")])
     buttons.append(
         [
-            Button.inline(lang.BACK_TEXT, f"groupinfo_page_{page_no}"),
+            Button.inline(lang.BACK_TEXT, f"groupinfo_page_{page_no}", style="success"),
             Button.inline(
-                lang.DELETE, f"groupinfo_delconf2_{file_info.group_id}_{page_no}")
+                lang.DELETE, f"groupinfo_delconf2_{file_info.group_id}_{page_no}",
+                style="danger"
+            )
         ]
     )
 
@@ -225,14 +228,22 @@ async def handle_fileinfo_del_conf_button(evt: events.CallbackQuery.Event):
         lang.CONFIRM_DELETE_TEXT.format(
             label=lang.GROUP if is_group else lang.FILE),
         buttons=[
-            [Button.inline(lang.YES+' '+lang.DELETE, (
-                f"{kind}_delete_{file_id}_{page_no}"
-                f"{f'_{group_id}' if group_id else ''}"
-            ))],
-            [Button.inline(lang.NO, (
-                f"{kind}_file_{file_id}_{page_no}"
-                f"{f'_{group_id}' if group_id else ''}"
-            ))]
+            [Button.inline(
+                lang.YES+' '+lang.DELETE,
+                (
+                    f"{kind}_delete_{file_id}_{page_no}"
+                    f"{f'_{group_id}' if group_id else ''}"
+                ),
+                style="danger"
+            )],
+            [Button.inline(
+                lang.NO,
+                (
+                    f"{kind}_file_{file_id}_{page_no}"
+                    f"{f'_{group_id}' if group_id else ''}"
+                ),
+                style="primary"
+            )]
         ]
     )
 
@@ -259,9 +270,11 @@ async def handle_fileinfo_del_button(evt: events.CallbackQuery.Event):
         await DB.db.remove_file(file_id, user_id)
     await evt.edit(lang.DELETED_SUCCESSFULLY_TEXT.format(label=lang.GROUP if is_group else lang.FILE), buttons=[
         [
-            Button.inline(lang.BACK_TEXT, (
-                f"groupinfo_file_{group_id}_{page_no}" if group_id else f"{kind}_page_{page_no}"
-        ))
+            Button.inline(
+                lang.BACK_TEXT,
+                f"groupinfo_file_{group_id}_{page_no}" if group_id else f"{kind}_page_{page_no}",
+                style="success"
+            )
         ]
     ])
 
@@ -273,7 +286,7 @@ async def handle_files_menu_button(evt: events.CallbackQuery.Event):
     await evt.edit(
         lang.SELECT_TYPE_OF_FILE,
         buttons=[
-            [Button.inline(lang.FILES, "fileinfo_page_0")],
-            [Button.inline(lang.GROUPS, "groupinfo_page_0")]
+            [Button.inline(lang.FILES, "fileinfo_page_0", style="primary")],
+            [Button.inline(lang.GROUPS, "groupinfo_page_0", style="success")]
         ]
     )

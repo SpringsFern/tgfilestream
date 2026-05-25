@@ -55,7 +55,7 @@ async def check_get_user(user_id: int, msg_id, required: bool = True) -> Optiona
     if required and user is None:
         await client.send_message(
             user_id, "Please agree to the Terms of Service before using the bot.",
-            buttons=[[Button.inline('Agree', f'tos_agree_{msg_id}'.encode('utf-8'))]]
+            buttons=[[Button.inline('Agree', f'tos_agree_{msg_id}'.encode('utf-8'), style="primary")]]
         )
     if user is not None and user.is_banned:
         await client.send_message(user_id, "You are banned from using this bot.")
