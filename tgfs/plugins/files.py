@@ -169,7 +169,7 @@ async def handle_myfiles_command(evt: events.NewMessage.Event) -> None:
     total_groups = await DB.db.total_groups(user.user_id)
     await evt.reply(lang.FILES_TEXT.format(total_files=total_files, total_groups=total_groups),
                     buttons=[
-        [Button.inline(lang.FILES, "fileinfo_page_0", style="primary")],
-        [Button.inline(lang.GROUPS, "groupinfo_page_0", style="success")]
+        [Button.inline(lang.FILES, "fileinfo_page_0")],
+        [Button.inline(lang.GROUPS, "groupinfo_page_0")]
     ]
     )

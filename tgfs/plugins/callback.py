@@ -76,7 +76,7 @@ async def handle_list_page(evt: events.CallbackQuery.Event) -> None:
 
     async for item_id, name in items_gen:
         buttons.append([
-            Button.inline(name, data=f"{kind}_file_{item_id}_{page_no}", style="primary")
+            Button.inline(name, data=f"{kind}_file_{item_id}_{page_no}")
         ])
 
     if not buttons:
@@ -85,20 +85,19 @@ async def handle_list_page(evt: events.CallbackQuery.Event) -> None:
 
     nav = []
     if page_no > 0:
-        nav.append(Button.inline("<<", f"{kind}_page_{page_no - 1}", style="success"))
+        nav.append(Button.inline("<<", f"{kind}_page_{page_no - 1}"))
 
     nav.append(Button.inline(
         lang.FILES_BUTTON_CURRENT.format(
             page_no=page_no + 1, total_pages=total_pages),
-        b"noop",
-        style="success"
+        b"noop"
     ))
 
     if page_no + 1 < total_pages:
-        nav.append(Button.inline(">>", f"{kind}_page_{page_no + 1}", style="success"))
+        nav.append(Button.inline(">>", f"{kind}_page_{page_no + 1}"))
 
     buttons.append(nav)
-    buttons.append([Button.inline(lang.BACK_TEXT, b"files_menu", style="danger")])
+    buttons.append([Button.inline(lang.BACK_TEXT, b"files_menu")])
 
     await evt.edit(
         lang.TOTAL_LABEL_COUNT.format(
@@ -135,17 +134,17 @@ async def handle_fileinfo_button(evt: events.CallbackQuery.Event):
         ),
         buttons=[
             [
-                Button.url(lang.DOWNLOAD, url, style="primary"),
-                Button.url(lang.WATCH, wt_url, style="primary"),
+                Button.url(lang.DOWNLOAD, url),
+                Button.url(lang.WATCH, wt_url),
             ],
             [
                 Button.inline(
                     lang.DELETE, (
                         f"fileinfo_delconf2_{file_info.id}_{page_no}"
                         f"{f'_{group_id}' if group_id else ''}"
-                    ), style="danger"),
+                    )),
                 Button.inline(lang.GET_FILE_TEXT,
-                              f"fileinfo_get_{file_info.id}", style="success")
+                              f"fileinfo_get_{file_info.id}")
             ],
             [Button.inline(
                 lang.BACK_TEXT, f"groupinfo_file_{group_id}_{page_no}" if group_id else f"fileinfo_page_{page_no}")]
@@ -171,14 +170,11 @@ async def handle_groupinfo_button(evt: events.CallbackQuery.Event):
     if file_info.files and len(file_info.files) <= 98:
         async for file_id, name in DB.db.get_files2(user_id, file_info.files):
             buttons.append(
-                [Button.inline(name, f"fileinfo_file_{file_id}_{page_no}_{group_id}", style="primary")])
+                [Button.inline(name, f"fileinfo_file_{file_id}_{page_no}_{group_id}")])
     buttons.append(
         [
-            Button.inline(lang.BACK_TEXT, f"groupinfo_page_{page_no}", style="success"),
-            Button.inline(
-                lang.DELETE, f"groupinfo_delconf2_{file_info.group_id}_{page_no}",
-                style="danger"
-            )
+            Button.inline(lang.BACK_TEXT, f"groupinfo_page_{page_no}"),
+            Button.inline(lang.DELETE, f"groupinfo_delconf2_{file_info.group_id}_{page_no}")
         ]
     )
 
@@ -286,7 +282,7 @@ async def handle_files_menu_button(evt: events.CallbackQuery.Event):
     await evt.edit(
         lang.SELECT_TYPE_OF_FILE,
         buttons=[
-            [Button.inline(lang.FILES, "fileinfo_page_0", style="primary")],
-            [Button.inline(lang.GROUPS, "groupinfo_page_0", style="success")]
+            [Button.inline(lang.FILES, "fileinfo_page_0")],
+            [Button.inline(lang.GROUPS, "groupinfo_page_0")]
         ]
     )
