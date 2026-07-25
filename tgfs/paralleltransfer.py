@@ -208,8 +208,8 @@ class ParallelTransferrer:
                     log.debug("Part %d/%d (total %d) downloaded", part, last_part, part_count)
                     part += 1
                 log.info("Parallel download finished")
-        except (GeneratorExit, StopAsyncIteration, asyncio.CancelledError):
-            log.info("Parallel download interrupted")
+        except asyncio.CancelledError:
+            log.info("Parallel download cancelled")
             raise
         except Exception: # pylint: disable=W0718
             log.error("Parallel download errored", exc_info=True)

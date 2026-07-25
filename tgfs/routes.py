@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import logging
+from typing import Union
 from aiohttp import web
 
 from tgfs.config import Config
@@ -36,7 +38,7 @@ async def handle_root(_: web.Request):
 # @routes.get(r"/{msg_id:-?\d+}/{name}")
 @routes.get("/dl/{payload}/{sig}")
 @routes.get("/wt/{payload}/{sig}")
-async def handle_file_request(req: web.Request, head: bool = None, watch: bool = None) -> web.Response:
+async def handle_file_request(req: web.Request, head: bool = None, watch: bool = None) -> Union[web.Response, web.StreamResponse]:
     if watch is None:
         watch = req.path.startswith("/wt/")
     if head is None:
@@ -60,22 +62,11 @@ async def handle_file_request(req: web.Request, head: bool = None, watch: bool =
 
     if (until_bytes >= size) or (from_bytes < 0) or (until_bytes < from_bytes):
         return web.Response(status=416, headers={"Content-Range": f"bytes */{size}"})
-    if head:
-        body=None
-    else:
-        transfer: ParallelTransferrer = min(multi_clients, key=lambda c: c.users)
-        log.debug("Using client %s", transfer.client_id)
-        location = await DB.db.get_location(file, transfer.client_id)
-        if location is None:
-            source = await DB.db.get_source(file.id, user_id)
-            location = await update_location(source, transfer)
-        body=transfer.download(location, file.dc_id, size, from_bytes, until_bytes)
 
     disposition = "inline" if watch else "attachment"
 
-    return web.Response(
+    resp = web.StreamResponse(
         status=200 if (from_bytes == 0 and until_bytes == size - 1) else 206,
-        body=body,
         headers={
             "Content-Type": file.mime_type,
             "Content-Range": f"bytes {from_bytes}-{until_bytes}/{size}",
@@ -84,6 +75,29 @@ async def handle_file_request(req: web.Request, head: bool = None, watch: bool =
             "Accept-Ranges": "bytes",
         }
     )
+
+    await resp.prepare(req)
+
+    body = None
+    try:
+        if not head:
+            transfer: ParallelTransferrer = min(multi_clients, key=lambda c: c.users)
+            log.debug("Using client %s", transfer.client_id)
+            location = await DB.db.get_location(file, transfer.client_id)
+            if location is None:
+                source = await DB.db.get_source(file.id, user_id)
+                location = await update_location(source, transfer)
+            body=transfer.download(location, file.dc_id, size, from_bytes, until_bytes)
+            async for chunk in body:
+                await resp.write(chunk)
+        await resp.write_eof()
+    except (ConnectionResetError, asyncio.CancelledError):
+        pass
+    finally:
+        if body is not None:
+            await body.aclose()
+    return resp
+
 
 @routes.get("/group/{payload}/{sig}")
 async def handle_group_request(req: web.Request) -> web.Response:

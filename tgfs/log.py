@@ -18,7 +18,7 @@ import logging
 from tgfs.config import Config
 
 LOG_LEVEL = logging.DEBUG if Config.DEBUG else logging.INFO
-EXT_LOG_LEVEL = logging.INFO if Config.EXT_DEBUG else logging.ERROR
+EXT_LOG_LEVEL = logging.DEBUG if Config.EXT_DEBUG else logging.ERROR
 logging.basicConfig(level=LOG_LEVEL)
 logging.getLogger("telethon").setLevel(EXT_LOG_LEVEL)
 logging.getLogger("aiohttp").setLevel(EXT_LOG_LEVEL)
